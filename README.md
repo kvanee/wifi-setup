@@ -24,7 +24,7 @@ configure and run this server.
 First, clone this repo and download its dependencies from npm:
 
 ```
-$ git clone git@github.com:davidflanagan/wifi-setup.git
+$ git clone https://github.com/kvanee/wifi-setup.git
 $ cd wifi-setup
 $ npm install
 ```
@@ -36,10 +36,9 @@ make sure it does not run by default each time we boot. For Raspberry
 Pi, we need to do:
 
 ```
-$ sudo apt-get install hostapd
-$ sudo apt-get install udhcpd
+$ sudo apt install dnsmasq hostapd
 $ sudo systemctl disable hostapd
-$ sudo systemctl disable udhcpd
+$ sudo systemctl disable dnsmasq
 ```
 
 ### Step 2: configuration files
@@ -55,22 +54,39 @@ DAEMON_CONF="/etc/hostapd/hostapd.conf"
   config file defines the access point name "Wifi Setup". Edit it if
   you want to use a more descriptive name for your device.
 
-- Edit the file `/etc/default/udhcpd` and comment out the line:
+### Step 3: Configuring the DHCP server (dnsmasq)
+
+The DHCP service is provided by dnsmasq. By default, the configuration file contains a lot of information that is not needed, and it is easier to start from scratch. Rename this configuration file, and edit a new one:
 
 ```
-DHCPD_ENABLED="no"
+sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
+sudo nano /etc/dnsmasq.conf
+```
+Type or copy the following information into the dnsmasq configuration file and save it:
+
+```
+interface=wlan0      # Use the require wireless interface - usually wlan0
+dhcp-range=192.168.1.2,192.168.1.20,255.255.255.0,24h
 ```
 
-- Copy `config/udhcpd.conf` to `/etc/udhcp.conf`.
+So for wlan0, we are going to provide IP addresses between 192.168.1.2 and 192.168.1.20, with a lease time of 24 hours. If you are providing DHCP services for other network devices (e.g. eth0), you could add more sections with the appropriate interface header, with the range of addresses you intend to provide to that interface.
 
-### Step 3: set up the other services you want your device to run
+There are many more options for dnsmasq; see the [dnsmasq documentation|http://www.thekelleys.org.uk/dnsmasq/doc.html] for more details.
+
+Reload dnsmasq to use the updated configuration:
+
+```
+sudo systemctl reload dnsmasq
+```
+
+### Step 4: set up the other services you want your device to run
 
 Once the wifi-setup server has connected to wifi, it will exit. But if
 you want, it can run a command to make your device start doing
 whatever it is your device does. If you want to use this feature, edit
 `platforms/default.js` to define the `nextStageCommand` property.
 
-### Step 4: run the server
+### Step 5: run the server
 
 If you have a keyboard and monitor hooked up to your device, or have a
 serial connection to the device, then you can try out the server at

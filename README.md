@@ -38,6 +38,7 @@ Pi, we need to do:
 ```
 $ sudo apt install dnsmasq hostapd
 $ sudo systemctl disable hostapd
+$ sudo systemctl unmask hostapd
 $ sudo systemctl disable dnsmasq
 ```
 

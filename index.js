@@ -14,7 +14,7 @@ var preliminaryScanResults;
 // Wait until we have a working wifi connection. Retry every 3 seconds up
 // to 10 times. If we are connected, then start just start the next stage
 // and exit. But if we never get a wifi connection, go into AP mode.
-waitForWifi(20, 3000)
+waitForWifi(10, 2000)
   .then(runNextStageAndExit)
   .catch(() => { startServer(); startAP() });
 
